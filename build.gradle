@@ -1,0 +1,126 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id 'jacoco'
+    id 'org.springframework.boot' version '3.3.4'
+    id 'io.spring.dependency-management' version '1.1.6'
+    id 'org.sonarqube' version '5.1.0.4882'
+    id 'org.openapi.generator' version '7.2.0'
+}
+
+group = 'br'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.withType(JavaExec).configureEach { defaultCharacterEncoding = 'UTF-8' }
+tasks.withType(Javadoc).configureEach { options.encoding = 'UTF-8' }
+tasks.withType(Test).configureEach { defaultCharacterEncoding = 'UTF-8' }
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+configurations {
+    compileOnly { extendsFrom annotationProcessor }
+}
+
+dependencies {
+    implementation platform('org.springframework.boot:spring-boot-dependencies:3.3.4')
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
+    implementation 'org.keycloak:keycloak-spring-boot-starter:25.0.3'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+    implementation 'org.postgresql:postgresql'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.amqp:spring-rabbit-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql:1.20.2'
+    testImplementation 'org.testcontainers:junit-jupiter:1.20.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation 'org.hibernate:hibernate-core:6.6.1.Final'
+    annotationProcessor 'org.hibernate.orm:hibernate-jpamodelgen:6.6.1.Final'
+}
+
+test {
+    systemProperty 'spring.profiles.active', System.getProperty('spring.profiles.active') ?: 'local'
+    useJUnitPlatform()
+    finalizedBy tasks.jacocoTestReport
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+    reportsDirectory = layout.buildDirectory.dir("jacocoReports")
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir('jacocoHtml'))
+    }
+}
+
+jar {
+    archiveBaseName = 'order-app'
+    archiveVersion = ''
+}
+
+bootJar {
+    archiveFileName = 'order-app.jar'
+}
+
+springBoot { buildInfo() }
+
+apply from: 'openapi.gradle'
+
+tasks.bootRun {
+    dependsOn tasks.jacocoTestReport
+}
+
+configurations {
+    annotationProcessor {
+        extendsFrom implementation
+    }
+}
+
+sourceSets {
+    generated {
+        java {
+            srcDir layout.buildDirectory.dir("generated/sources/annotationProcessor/java/main")
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.generatedSourceOutputDirectory = layout.buildDirectory.dir("generated/sources/annotationProcessor/java/main").get().asFile
+}
+
+idea {
+    module {
+        sourceDirs += layout.buildDirectory.dir("generated/sources/annotationProcessor/java/main").get().asFile
+        generatedSourceDirs += layout.buildDirectory.dir("generated/sources/annotationProcessor/java/main").get().asFile
+    }
+}

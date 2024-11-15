@@ -1,0 +1,27 @@
+# Configurações do Servidor (Local)
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+# Configurações do DataSource (Banco de Dados - Local)
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order-db
+    username: postgres
+    password: postgres
+# Ativando o Docker Compose ambiente Local
+  docker:
+    compose:
+      lifecycle-management: start-only
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

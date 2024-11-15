@@ -1,0 +1,9 @@
+application:
+  name: order-app
+
+spring:
+  main:
+    banner-mode: off
+  flyway:
+    clean-disabled: false
+    enabled: false

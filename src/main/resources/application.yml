@@ -1,0 +1,14 @@
+application:
+  name: order-app
+
+# Configurações do Servidor
+server:
+  port: 8080
+
+spring:
+  docker:
+    compose:
+      lifecycle-management: none
+  web:
+    resources:
+      static-locations: file:build/jacocoHtml/

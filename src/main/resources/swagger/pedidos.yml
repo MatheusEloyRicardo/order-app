@@ -1,0 +1,167 @@
+openapi: 3.0.3
+info:
+  title: Pedidos API
+  description: API para gerenciamento de Pedidos
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/pedidos
+    description: Servidor local
+
+tags:
+  - name: Pedidos
+    description: Recurso de pedidos
+
+paths:
+
+  /realizados:
+    get:
+      x-spring-paginated: true
+      tags:
+        - Pedido
+      summary: Listar os Todos os Pedidos Realizados
+      description: Listagem de pedidos realizados
+      operationId: listarPedidosRealizados
+      responses:
+        '200':
+          description: Lista de Pedidos Realizados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListarPedidosRealizadosResponse'
+        '500':
+          description: Erro interno do servidor
+
+  /realizar:
+    post:
+      tags:
+        - Pedido
+      summary: Realizar Pedido
+      description: Realizar um novo Pedido
+      operationId: realizarPedido
+      requestBody:
+        description: Objeto com os atributos do Pedido
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RealizarPedidoRequest'
+      responses:
+        '201':
+          description: Pedido criado com sucesso
+
+components:
+  schemas:
+    Pageable:
+      type: object
+      required:
+        - pageNumber
+        - pageSize
+      properties:
+        pageNumber:
+          type: integer
+          minimum: 0
+          description: O número da página atual
+          example: 3
+        pageSize:
+          type: integer
+          minimum: 1
+          description: O número de itens por página
+          example: 20
+        sort:
+          type: array
+          items:
+            type: string
+            description: Critérios de ordenação (campo, direção)
+            example: [ 'dataCriacao,asc', 'id,asc' ]
+
+    ListarPedidosRealizadosResponse:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          minimum: 0
+          description: Número total de elementos
+          example: 100
+        totalPages:
+          type: integer
+          minimum: 1
+          description: Número total de páginas
+          example: 5
+        first:
+          type: boolean
+          description: Indica se é a primeira página
+          example: false
+        last:
+          type: boolean
+          description: Indica se é a última página
+          example: false
+        empty:
+          type: boolean
+          description: Indica se a página está vazia
+          example: false
+        pageable:
+          $ref: '#/components/schemas/Pageable'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/PedidoDTO'
+
+    PedidoDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+          description: ID do Pedido
+          example: 1
+        dataPedido:
+          type: string
+          format: date
+          description: 'Data do Pedido (formato: dd/mm/aaaa)'
+          example: 13/09/2024
+        horaPedido:
+          type: string
+          format: time
+          description: 'Horário do Pedido (formato: hh:mm)'
+          example: 08:00
+        status:
+          type: string
+          description: Status do Pedido
+          example: Iniciado
+        valorTotal:
+          type: string
+          format: decimal
+          description: Total do Pedido
+          example: 123.10
+
+    RealizarPedidoRequest:
+      type: object
+      required:
+        - produtos
+      properties:
+        produtos:
+          type: array
+          description: Lista de produtos com suas respectivas quantidades
+          items:
+            type: object
+            required:
+              - idProduto
+              - quantidade
+            properties:
+              idProduto:
+                type: integer
+                format: int64
+                nullable: false
+                minimum: 1
+                description: ID do Produto
+                example: 1
+              quantidade:
+                type: integer
+                format: int64
+                nullable: false
+                minimum: 1
+                description: Quantidade de cada produto no pedido
+                example: 2
+
